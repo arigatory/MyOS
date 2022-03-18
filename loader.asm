@@ -39,6 +39,27 @@ LoadKernel:
     jc ReadError    ; если не удастся считать сектор cf=1
 
 
+GetMemoryInfoStart:
+    mov eax,0xe820
+    mov edx,0x534d4150
+    mov ecx,20
+    mov edi,0x9000
+    xor ebx,ebx
+    int 0x15
+    jc NotSupport
+
+GetMemInfo:
+    add edi,20
+    mov eax,0xe820
+    mov edx,0x534d4150
+    mov ecx,20
+    int 0x15
+    jc GetMemDone
+
+    test ebx,ebx
+    jnz GetMemInfo
+
+GetMemDone:
        ; будем использовать прерывания биоса для печати. Здесь 0x10
     mov ah,0x13     ; код функции 0x13 - print_string
     mov al,1        ; write mode = 1, курсор будет помещаться в конец строки
@@ -57,6 +78,6 @@ End:
 
 
 DriveId: db 0
-Message: db "Welcome to your new OS! Loader starts...",10,13,"Long mode is supported...",10,13,"Kernel is loaded...",10,13
+Message: db "Welcome to your new OS! Loader starts...",10,13,"Long mode is supported...",10,13,"Kernel is loaded...",10,13,"Get Memory info done...",10,13
 MessageLen: equ $-Message
 ReadPacket: times 16 db 0
